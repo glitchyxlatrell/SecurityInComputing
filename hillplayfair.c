@@ -2,14 +2,12 @@
 Assignment:
 hillplayfair - Hill cipher followed by Playfair cipher
 
-Author: <Your Name Here>
+Author: Latrell Kong
 
-Language: C, C++, or Rust (only)
+Language: C
 
 To Compile:
   gcc  -O2 -std=c11   -o hillplayfair hillplayfair.c
-  g++  -O2 -std=c++17 -o hillplayfair hillplayfair.cpp
-  rustc -O hillplayfair.rs -o hillplayfair
 
 To Execute (on Eustis):
   ./hillplayfair encrypt key.txt plain.txt keyword.txt
@@ -146,7 +144,30 @@ int main(int argc, char *argv[])
   printf("Preprocessed Plaintext:\n");
   printWrapped(preprocessPlaintext);
 
+  printf("Hill Cipher Key Dimension:\n%d\n\n", nHill);
+  printf("Hill Cipher Key Matrix:\n");
+  for(int i = 0; i < nHill; i++)
+  {
+    for(int j = 0; j < nHill; j++)
+    {
+      printf("  %d  ", hillMatrix[i][j]);
+    }
+    printf("\n\n");
+  }
 
+  int plainLength = strlen(preprocessPlaintext);
+  int pad = nHill - (plainLength % nHill);
+  if((plainLength % nHill) != 0)
+  {
+    for(int i = 0; i < pad; i++)
+    {
+      preprocessPlaintext[plainLength + i] = 'X';
+    }
+    preprocessPlaintext[plainLength + pad] = '\0';
+  }
+
+  printf("Padded Hill Cipher Plaintext:\n");
+  printWrapped(preprocessPlaintext);
 
 
   return 0;
