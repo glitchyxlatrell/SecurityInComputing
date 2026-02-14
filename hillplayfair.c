@@ -32,10 +32,15 @@ Due Date: February 16th 2026
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
+
 
 
 void processPlaintext(char *plaintext, char *newText);
 void printWrapped(char *text);
+void hillCipher(int n, int hillMatrix[][9], char *text, char *newText);
+void processPlayKey(char *playfairKey, char *processed);
+void createPlayfair(char *key, char matrix[][5]);
 
 int main(int argc, char *argv[])
 {
@@ -141,7 +146,7 @@ int main(int argc, char *argv[])
   char preprocessPlaintext[10000];
   processPlaintext(plaintext, preprocessPlaintext);
 
-  printf("Preprocessed Plaintext:\n");
+  printf("Preprocessed Plaintext:\n\n");
   printWrapped(preprocessPlaintext);
 
   printf("Hill Cipher Key Dimension:\n%d\n\n", nHill);
@@ -169,6 +174,31 @@ int main(int argc, char *argv[])
   printf("Padded Hill Cipher Plaintext:\n");
   printWrapped(preprocessPlaintext);
 
+  char hillText[10000];
+  hillCipher(nHill, hillMatrix, preprocessPlaintext, hillText);
+
+  printf("\nCiphertext after Hill Cipher:\n");
+  printWrapped(hillText);
+
+
+  char playMatrix[5][5];
+  char processedPlayfairKey[strlen(playfairKey) + 1];
+  printf("\nPlayfair Keyword:\n%s\n\n", playfairKey);
+  processPlayKey(playfairKey, processedPlayfairKey);
+  createPlayfair(processedPlayfairKey, playMatrix);
+
+  printf("Playfair Table\n");
+  for(int i = 0; i < 5; i++)
+  {
+    for(int j = 0; j < 5; j++)
+    {
+      printf("%c", (char)playMatrix[i][j]);
+    }
+    printf("\n");
+  }
+
+  char readyToPlay[10000];
+  processCipher(hillText, readyToPlay);
 
   return 0;
 }
@@ -204,3 +234,137 @@ void printWrapped(char *text)
   }
   printf("\n");
 }
+
+void hillCipher(int n, int hillMatrix[][9], char *text, char *newText)
+{
+  int loopSize = strlen(text) / n;
+  int tempArray[n];
+  int intText[n];
+  for(int i = 0; i < loopSize; i++)
+  {
+    for(int j = 0; j < n; j++)
+    {
+      tempArray[j] = ((int)text[i * n + j] - 65);
+    }
+
+    // looping for k-rows of matrix
+    for(int k = 0; k < n; k++)
+    {
+      int sum = 0;
+      // looping for f-columns 
+      for(int f = 0; f < n; f++)
+      {
+        sum += hillMatrix[k][f] * tempArray[f];
+      }
+      intText[k] = sum % 26;
+    }
+
+    for(int h = 0; h < n; h++)
+    {
+      newText[i * n + h] = (char)(intText[h] + 65);
+    }
+  }
+  newText[loopSize * n] = '\0';
+}
+
+void processPlayKey(char *playfairKey, char *processed)
+{
+  bool nonDup[26] = {false};
+  int counter = 0;
+  int loop = strlen(playfairKey);
+  for(int i = 0; i < loop; i++)
+  {
+    playfairKey[i] = (char)toupper(playfairKey[i]);
+    if(playfairKey[i] == 'J')
+    {
+      playfairKey[i] = 'I';
+    }
+    int temp = (int)playfairKey[i] - 65;
+    if(!nonDup[temp])
+    {
+      processed[counter] = playfairKey[i];
+      counter++;
+      nonDup[temp] = true;
+    }
+  }
+  processed[counter] = '\0';
+}
+
+void createPlayfair(char *key, char matrix[][5])
+{
+  bool alphaTaken[26] = {false};
+  int row = 0;
+  int column = 0;
+  int loop = strlen(key);
+
+  for(int i = 0; i < loop; i++)
+  {
+    matrix[row][column] = key[i];
+    column++;
+    if(column == 5)
+    {
+      row++;
+      column = 0;
+    }
+
+    int temp = (int)key[i] - 65;
+    if(!alphaTaken[temp])
+    {
+      alphaTaken[temp] = true;
+    }
+  }
+
+  for(int i = 0; i < 26; i++)
+  {
+    if(i == ('J' - 65))
+    {
+      continue;
+    }
+
+    if(!alphaTaken[i])
+    {
+      matrix[row][column] = (char)(i + 65);
+      alphaTaken[i] = true;
+      column++;
+      if(column == 5)
+      {
+        row++;
+        column = 0;
+      }
+    }
+  }
+  
+}
+
+processCipher(char *oldText, char *newText)
+  {
+    int loop = strlen(oldText);
+    int counter = 0;
+    for(int i = 0; i < loop; i++)
+    {
+      newText[counter] = oldText[i];
+      counter++;
+
+      if((i + 1 < loop) && (oldText[i] == oldText[i + 1]))
+      {
+        if(oldText[i] == 'X')
+        {
+          newText[counter] = 'Z';
+          counter++;
+          i++;
+          continue;
+        }
+
+        newText[counter] = 'X';
+        counter++;
+        i++;
+      }
+    }
+
+    if((counter % 2) != 0)
+    {
+      newText[counter] = 'X';
+      counter++;
+    }
+    newText[counter] = '\0';
+  }
