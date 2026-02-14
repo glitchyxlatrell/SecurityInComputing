@@ -34,13 +34,12 @@ Due Date: February 16th 2026
 #include <ctype.h>
 #include <stdbool.h>
 
-
-
 void processPlaintext(char *plaintext, char *newText);
 void printWrapped(char *text);
 void hillCipher(int n, int hillMatrix[][9], char *text, char *newText);
 void processPlayKey(char *playfairKey, char *processed);
 void createPlayfair(char *key, char matrix[][5]);
+void processCipher(char *oldText, char *newText);
 
 int main(int argc, char *argv[])
 {
@@ -102,7 +101,7 @@ int main(int argc, char *argv[])
 
   // opening hill key file for the matrix
   int nHill = 0;
-  if(fscanf(hillKeyFile,"%d", &nHill) != 1  || nHill < 2 || nHill > 9)
+  if (fscanf(hillKeyFile, "%d", &nHill) != 1 || nHill < 2 || nHill > 9)
   {
     printf("invalid n value in hill key file\n");
     return 1;
@@ -110,11 +109,11 @@ int main(int argc, char *argv[])
 
   // parsing through file to fill out matrix key
   int hillMatrix[nHill][nHill];
-  for(int i = 0; i < nHill; i++)
+  for (int i = 0; i < nHill; i++)
   {
-    for(int j = 0; j < nHill; j++)
+    for (int j = 0; j < nHill; j++)
     {
-      if(fscanf(hillKeyFile, "%d", &hillMatrix[i][j]) != 1)
+      if (fscanf(hillKeyFile, "%d", &hillMatrix[i][j]) != 1)
       {
         printf("invalid matrix in hill key file\n");
         return 1;
@@ -136,7 +135,7 @@ int main(int argc, char *argv[])
   plaintext[temp] = '\0';
 
   char playfairKey[100];
-  if(fscanf(playfairKeyFile, "%99s", playfairKey) != 1)
+  if (fscanf(playfairKeyFile, "%99s", playfairKey) != 1)
   {
     printf("error getting playfair key");
   }
@@ -151,9 +150,9 @@ int main(int argc, char *argv[])
 
   printf("Hill Cipher Key Dimension:\n%d\n\n", nHill);
   printf("Hill Cipher Key Matrix:\n");
-  for(int i = 0; i < nHill; i++)
+  for (int i = 0; i < nHill; i++)
   {
-    for(int j = 0; j < nHill; j++)
+    for (int j = 0; j < nHill; j++)
     {
       printf("  %d  ", hillMatrix[i][j]);
     }
@@ -162,9 +161,9 @@ int main(int argc, char *argv[])
 
   int plainLength = strlen(preprocessPlaintext);
   int pad = nHill - (plainLength % nHill);
-  if((plainLength % nHill) != 0)
+  if ((plainLength % nHill) != 0)
   {
-    for(int i = 0; i < pad; i++)
+    for (int i = 0; i < pad; i++)
     {
       preprocessPlaintext[plainLength + i] = 'X';
     }
@@ -180,7 +179,6 @@ int main(int argc, char *argv[])
   printf("\nCiphertext after Hill Cipher:\n");
   printWrapped(hillText);
 
-
   char playMatrix[5][5];
   char processedPlayfairKey[strlen(playfairKey) + 1];
   printf("\nPlayfair Keyword:\n%s\n\n", playfairKey);
@@ -188,9 +186,9 @@ int main(int argc, char *argv[])
   createPlayfair(processedPlayfairKey, playMatrix);
 
   printf("Playfair Table\n");
-  for(int i = 0; i < 5; i++)
+  for (int i = 0; i < 5; i++)
   {
-    for(int j = 0; j < 5; j++)
+    for (int j = 0; j < 5; j++)
     {
       printf("%c", (char)playMatrix[i][j]);
     }
@@ -206,9 +204,9 @@ int main(int argc, char *argv[])
 void processPlaintext(char *plaintext, char *newText)
 {
   int counter = 0;
-  for(int i = 0; plaintext[i] != '\0'; i++)
+  for (int i = 0; plaintext[i] != '\0'; i++)
   {
-    if((plaintext[i] >= 'A' && plaintext[i] <= 'Z') || (plaintext[i] >= 'a' && plaintext[i] <= 'z'))
+    if ((plaintext[i] >= 'A' && plaintext[i] <= 'Z') || (plaintext[i] >= 'a' && plaintext[i] <= 'z'))
     {
       newText[counter] = (char)toupper(plaintext[i]);
       counter++;
@@ -221,12 +219,12 @@ void processPlaintext(char *plaintext, char *newText)
 void printWrapped(char *text)
 {
   int counter = 0;
-  for(int i = 0; text[i] != '\0'; i++)
+  for (int i = 0; text[i] != '\0'; i++)
   {
-    printf("%c ",text[i]);
+    printf("%c ", text[i]);
     counter++;
 
-    if(counter == 80)
+    if (counter == 80)
     {
       printf("\n");
       counter = 0;
@@ -240,26 +238,26 @@ void hillCipher(int n, int hillMatrix[][9], char *text, char *newText)
   int loopSize = strlen(text) / n;
   int tempArray[n];
   int intText[n];
-  for(int i = 0; i < loopSize; i++)
+  for (int i = 0; i < loopSize; i++)
   {
-    for(int j = 0; j < n; j++)
+    for (int j = 0; j < n; j++)
     {
       tempArray[j] = ((int)text[i * n + j] - 65);
     }
 
     // looping for k-rows of matrix
-    for(int k = 0; k < n; k++)
+    for (int k = 0; k < n; k++)
     {
       int sum = 0;
-      // looping for f-columns 
-      for(int f = 0; f < n; f++)
+      // looping for f-columns
+      for (int f = 0; f < n; f++)
       {
         sum += hillMatrix[k][f] * tempArray[f];
       }
       intText[k] = sum % 26;
     }
 
-    for(int h = 0; h < n; h++)
+    for (int h = 0; h < n; h++)
     {
       newText[i * n + h] = (char)(intText[h] + 65);
     }
@@ -272,15 +270,15 @@ void processPlayKey(char *playfairKey, char *processed)
   bool nonDup[26] = {false};
   int counter = 0;
   int loop = strlen(playfairKey);
-  for(int i = 0; i < loop; i++)
+  for (int i = 0; i < loop; i++)
   {
     playfairKey[i] = (char)toupper(playfairKey[i]);
-    if(playfairKey[i] == 'J')
+    if (playfairKey[i] == 'J')
     {
       playfairKey[i] = 'I';
     }
     int temp = (int)playfairKey[i] - 65;
-    if(!nonDup[temp])
+    if (!nonDup[temp])
     {
       processed[counter] = playfairKey[i];
       counter++;
@@ -297,74 +295,71 @@ void createPlayfair(char *key, char matrix[][5])
   int column = 0;
   int loop = strlen(key);
 
-  for(int i = 0; i < loop; i++)
+  for (int i = 0; i < loop; i++)
   {
     matrix[row][column] = key[i];
     column++;
-    if(column == 5)
+    if (column == 5)
     {
       row++;
       column = 0;
     }
 
     int temp = (int)key[i] - 65;
-    if(!alphaTaken[temp])
+    if (!alphaTaken[temp])
     {
       alphaTaken[temp] = true;
     }
   }
 
-  for(int i = 0; i < 26; i++)
+  for (int i = 0; i < 26; i++)
   {
-    if(i == ('J' - 65))
+    if (i == ('J' - 65))
     {
       continue;
     }
 
-    if(!alphaTaken[i])
+    if (!alphaTaken[i])
     {
       matrix[row][column] = (char)(i + 65);
       alphaTaken[i] = true;
       column++;
-      if(column == 5)
+      if (column == 5)
       {
         row++;
         column = 0;
       }
     }
   }
-  
 }
 
-processCipher(char *oldText, char *newText)
+void processCipher(char *oldText, char *newText)
+{
+  int loop = strlen(oldText);
+  int counter = 0;
+  for (int i = 0; i < loop; i++)
   {
-    int loop = strlen(oldText);
-    int counter = 0;
-    for(int i = 0; i < loop; i++)
-    {
-      newText[counter] = oldText[i];
-      counter++;
+    newText[counter] = oldText[i];
+    counter++;
 
-      if((i + 1 < loop) && (oldText[i] == oldText[i + 1]))
+    if ((i + 1 < loop) && (oldText[i] == oldText[i + 1]))
+    {
+      if (oldText[i] == 'X')
       {
-        if(oldText[i] == 'X')
-        {
-          newText[counter] = 'Z';
-          counter++;
-          i++;
-          continue;
-        }
-
-        newText[counter] = 'X';
+        newText[counter] = 'Z';
         counter++;
-        i++;
+        continue;
       }
-    }
 
-    if((counter % 2) != 0)
-    {
       newText[counter] = 'X';
       counter++;
     }
-    newText[counter] = '\0';
   }
+
+  if ((counter % 2) != 0)
+  {
+    newText[counter] = 'X';
+    counter++;
+  }
+  newText[counter] = '\0';
+}
