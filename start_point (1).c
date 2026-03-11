@@ -35,6 +35,9 @@ Due Date: 3/23/26
 #include <stdlib.h>
 #include <ctype.h>
 
+// function prototypes
+void processPlaintext(char *plaintext, char *newText);
+
 int main(int argc, char *argv[])
 {
 
@@ -77,6 +80,30 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  // variables to take in message
+  char message[10000];
+  int temp = 0;
+  int tempChar;
+
+  // parsing through plaintext file using fgetc for every character
+  while ((tempChar = fgetc(messageFile)) != EOF && temp < 9999)
+  {
+    message[temp] = (char)tempChar;
+    temp++;
+  }
+  message[temp] = '\0';
+
+  fclose(messageFile);
+
+  // printing original message
+  printf("\nThe original message:\n%s\n", message);
+
+  // processing and printing message
+  char preprocessMessage[10000];
+  processPlaintext(message, preprocessMessage);
+  printf("The preprocessed message (invisible characters removed):\n%s\n", preprocessMessage);
+  
+
 
 
 
@@ -84,4 +111,24 @@ int main(int argc, char *argv[])
 
   
   return 0;
+}
+
+// function to preprocess message
+void processPlaintext(char *message, char *newText)
+{
+  int counter = 0;
+
+  // parsing through message, and only grabbing letters or digits, discarding everything else
+  for (int i = 0; message[i] != '\0'; i++)
+  {
+    if (isalnum(message[i]))
+    {
+      newText[counter] = (message[i]);
+      counter++;
+    }
+  }
+
+  // null terminator at end of message
+  newText[counter] = '\0';
+  return;
 }
