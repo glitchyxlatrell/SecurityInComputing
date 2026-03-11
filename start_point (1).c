@@ -102,6 +102,8 @@ int main(int argc, char *argv[])
   char preprocessMessage[10000];
   processPlaintext(message, preprocessMessage);
   printf("The preprocessed message (invisible characters removed):\n%s\n", preprocessMessage);
+
+  // obtaining and printing decimal representation of message
   
 
 
