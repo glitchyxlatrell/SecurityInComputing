@@ -30,30 +30,58 @@ Instructor: Jie Lin, Ph.D.
 Due Date: 3/23/26
 */
 
+// importing necessary C libraries
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 int main(int argc, char *argv[])
 {
-    printf("argc = %d\n", argc);
 
-    for (int i = 0; i < argc; i++)
+  // initializing file and variable for command line inputs
+  FILE *messageFile = NULL;
+  int crcType = 0;
+
+  // checking if all arguments were provided
+  if (argc == 3)
+  {
+    // opening input text file
+    messageFile = fopen(argv[1], "r");
+    if (messageFile == NULL)
     {
-        printf("argv[%d] = %s\n", i, argv[i]);
+      printf("message file could not be opened\n");
+      return 1;
     }
 
-    printf("\n");
-
-    if (argc > 1)
+    // checking if crc algorithm integer is valid
+    if (isdigit(argv[2][0]))
     {
-        int x = atoi(argv[1]);   // convert string to int (simple)
-        printf("Converted argv[1] to int: %d\n", x);
+      crcType = atoi(argv[2]);
+      if (crcType != 3 && crcType != 4 && crcType != 8)
+      {
+        printf("invalid crc algorithm value\n");
+        return 1;
+      }
     }
     else
     {
-        printf("No extra arguments provided.\n");
-        printf("Try: ./00_args 123\n");
+      printf("invalid crc algorithm value\n");
+      return 1;
     }
+  }
+  else
+  {
+    // showing error if invalid number of arguments provided
+    printf("Invalid number of arguments provided.\n");
+    printf("Try: ./crcxor message.txt 3\n");
+    return 1;
+  }
 
-    return 0;
+
+
+
+
+
+  
+  return 0;
 }
