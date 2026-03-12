@@ -121,25 +121,25 @@ int main(int argc, char *argv[])
   fclose(messageFile);
 
   // printing original message
-  printf("\nThe original message:\n%s\n", message);
+  printf("\nThe original message:\n%s\n\n", message);
 
   // processing and printing message
   char preprocessMessage[10000];
   processPlaintext(message, preprocessMessage);
-  printf("The preprocessed message (invisible characters removed):\n%s\n", preprocessMessage);
+  printf("The preprocessed message (invisible characters removed):\n%s\n\n", preprocessMessage);
 
   // obtaining and printing decimal and hex representation of message
   char decimalMessage[10000];
   char hexMessage[10000];
   getDecHex(preprocessMessage, decimalMessage, hexMessage, ascii_table);
 
-  printf("The decimal representation of the preprocessed message:\n%s\n", decimalMessage);
-  printf("The hex representation of the preprocessed message:\n%s\n", hexMessage);
+  printf("The decimal representation of the preprocessed message:\n%s\n\n", decimalMessage);
+  printf("The hex representation of the preprocessed message:\n%s\n\n", hexMessage);
 
   // obtaining and printing binary representation of message
   char binaryMessage[10000];
   getBin(preprocessMessage, binaryMessage);
-  printf("The binary representation of the preprocessed message:\n%s\n", hexMessage);
+  printf("The binary representation of the preprocessed message:\n%s\n\n", binaryMessage);
 
   // padding and printing binary representation of message
   switch(crcType)
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
   printf("The binary representation of the original message prepared for CRC computation\n");
   printf("(padded with %d zeros):\n%s\n\n", crcType, binaryMessage);
 
-
+  
 
 
 
