@@ -34,12 +34,36 @@ Due Date: 3/23/26
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
+
 
 // function prototypes
 void processPlaintext(char *plaintext, char *newText);
+void getDecHex(char *preMessage, char *newDec, char *newHex, char arr[16][8]);
+void getBin(char *preprocessMessage, char *binaryMessage);
 
 int main(int argc, char *argv[])
 {
+
+  // look-up table for ASCII values
+  char ascii_table[16][8] = {
+      {'\0', '\0', ' ', '0', '@', 'P', '`', 'p'},
+      {'\0', '\0', '!', '1', 'A', 'Q', 'a', 'q'},
+      {'\0', '\0', '"', '2', 'B', 'R', 'b', 'r'},
+      {'\0', '\0', '#', '3', 'C', 'S', 'c', 's'},
+      {'\0', '\0', '$', '4', 'D', 'T', 'd', 't'},
+      {'\0', '\0', '%', '5', 'E', 'U', 'e', 'u'},
+      {'\0', '\0', '&', '6', 'F', 'V', 'f', 'v'},
+      {'\0', '\0', '\'', '7', 'G', 'W', 'g', 'w'},
+      {'\0', '\0', '(', '8', 'H', 'X', 'h', 'x'},
+      {'\0', '\0', ')', '9', 'I', 'Y', 'i', 'y'},
+      {'\0', '\0', '*', ':', 'J', 'Z', 'j', 'z'},
+      {'\0', '\0', '+', ';', 'K', '[', 'k', '{'},
+      {'\0', '\0', ',', '<', 'L', '\\', 'l', '|'},
+      {'\0', '\0', '-', '=', 'M', ']', 'm', '}'},
+      {'\0', '\0', '.', '>', 'N', '^', 'n', '~'},
+      {'\0', '\0', '/', '?', 'O', '_', 'o', '\0'}
+    };
 
   // initializing file and variable for command line inputs
   FILE *messageFile = NULL;
@@ -93,6 +117,7 @@ int main(int argc, char *argv[])
   }
   message[temp] = '\0';
 
+  // closing message file
   fclose(messageFile);
 
   // printing original message
@@ -103,15 +128,25 @@ int main(int argc, char *argv[])
   processPlaintext(message, preprocessMessage);
   printf("The preprocessed message (invisible characters removed):\n%s\n", preprocessMessage);
 
-  // obtaining and printing decimal representation of message
-  
+  // obtaining and printing decimal and hex representation of message
+  char decimalMessage[10000];
+  char hexMessage[10000];
+  getDecHex(preprocessMessage, decimalMessage, hexMessage, ascii_table);
+
+  printf("The decimal representation of the preprocessed message:\n%s\n", decimalMessage);
+  printf("The hex representation of the preprocessed message:\n%s\n", hexMessage);
+
+  // obtaining and printing binary representation of message
+  char binaryMessage[10000];
+  getBin(preprocessMessage, binaryMessage);
+  printf("The binary representation of the preprocessed message:\n%s\n", hexMessage);
 
 
 
 
 
 
-  
+
   return 0;
 }
 
@@ -133,4 +168,104 @@ void processPlaintext(char *message, char *newText)
   // null terminator at end of message
   newText[counter] = '\0';
   return;
+}
+
+// function to get decimal and hex value of message
+void getDecHex(char *preMessage, char *newDec, char *newHex, char arr[16][8])
+{
+
+  // initializing temp and both new strings for strcat
+  char temp[10];
+  newDec[0] = '\0';
+  newHex[0] = '\0';
+
+  // looping through all of preprocessed message
+  for(int i = 0; preMessage[i] != '\0'; i++)
+  {
+    for(int j = 0; j < 16; j++)
+    {
+      for(int k = 0; k < 8; k++)
+      {
+
+        // getting row/column values if found value in ASCII table
+        if(preMessage[i] == arr[j][k])
+        {
+
+          // ordinal number formula, and storing decimal value in newDec
+          int decimal = 16 * k + j;
+          sprintf(temp, "%d ", decimal);
+          strcat(newDec, temp);
+
+          // storing hex value
+          sprintf(temp, "%d", k);
+          strcat(newHex, temp);
+
+          // hex letters, if 10 or greater
+          if(j > 9)
+          {
+            switch(j)
+            {
+              case 10:
+                strcat(newHex, "A ");
+                break;
+              case 11:
+                strcat(newHex, "B ");
+                break;
+              case 12:
+                strcat(newHex, "C ");
+                break;
+              case 13:
+                strcat(newHex, "D ");
+                break;
+              case 14:
+                strcat(newHex, "E ");
+                break;
+              case 15:
+                strcat(newHex, "F ");
+                break;
+            }
+          }
+          else
+          {
+            sprintf(temp, "%d ", j);
+            strcat(newHex, temp);
+          }
+          break;
+        }
+      }
+    }
+  }
+}
+
+// function to get binary representation of message
+void getBin(char *preprocessMessage, char *binaryMessage)
+{
+  // initializing all values and binaryMessage for strcat
+  int tempVal = 0;
+  int tempBin[8];
+  char temp[100];
+  binaryMessage[0] = '\0';
+
+  // parsing through all of preprocessed message
+  for(int i = 0; preprocessMessage[i] != '\0'; i++)
+  {
+
+    // setting tempVal to ascii value of char in preprocessed message
+    tempVal = preprocessMessage[i];
+    for(int j = 7; j >= 0; j--)
+    {
+      // doing math to get binary rep
+      tempBin[j] = tempVal % 2;
+      tempVal = tempVal / 2;
+    }
+
+    // going bit by bit in int array to store in binaryMessage
+    for(int j = 0; j < 8; j++)
+    {
+      sprintf(temp, "%d", tempBin[j]);
+      strcat(binaryMessage, temp);
+    }
+
+    strcat(binaryMessage, " ");
+  }
 }
