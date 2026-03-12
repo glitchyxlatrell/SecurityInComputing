@@ -141,6 +141,23 @@ int main(int argc, char *argv[])
   getBin(preprocessMessage, binaryMessage);
   printf("The binary representation of the preprocessed message:\n%s\n", hexMessage);
 
+  // padding and printing binary representation of message
+  switch(crcType)
+  {
+    case 3:
+      strcat(binaryMessage, "000");
+      break;
+    case 4:
+      strcat(binaryMessage, "0000");
+      break;
+    case 8:
+      strcat(binaryMessage, "00000000");
+      break; 
+  }
+
+  printf("The binary representation of the original message prepared for CRC computation\n");
+  printf("(padded with %d zeros):\n%s\n\n", crcType, binaryMessage);
+
 
 
 
