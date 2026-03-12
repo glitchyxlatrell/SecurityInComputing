@@ -41,6 +41,7 @@ Due Date: 3/23/26
 void processPlaintext(char *plaintext, char *newText);
 void getDecHex(char *preMessage, char *newDec, char *newHex, char arr[16][8]);
 void getBin(char *preprocessMessage, char *binaryMessage);
+void getCrc(char *message, int type, char *crcVal, char *crcHex);
 
 int main(int argc, char *argv[])
 {
@@ -141,7 +142,7 @@ int main(int argc, char *argv[])
   getBin(preprocessMessage, binaryMessage);
   printf("The binary representation of the preprocessed message:\n%s\n\n", binaryMessage);
 
-  // padding and printing binary representation of message
+  // padding binary representation of message
   switch(crcType)
   {
     case 3:
@@ -155,10 +156,14 @@ int main(int argc, char *argv[])
       break; 
   }
 
+  // printing binary representation
   printf("The binary representation of the original message prepared for CRC computation\n");
   printf("(padded with %d zeros):\n%s\n\n", crcType, binaryMessage);
 
-  
+  // obtaining and printing crc value in binary and hex
+  char crcBin[8];
+  char crcHex[8];
+  getCrc(binaryMessage, crcType, crcBin, crcHex);
 
 
 
@@ -285,4 +290,54 @@ void getBin(char *preprocessMessage, char *binaryMessage)
 
     strcat(binaryMessage, " ");
   }
+}
+
+void getCrc(char *message, int type, char *crcVal, char *crcHex)
+{
+
+  // initializing variables to set up for polynomial division
+  int crcPoly[9];
+  char noSpaceBin[10000];
+  int counter = 0;
+  int polyLength = 0;
+
+  // creating crc polynomial for division with XOR
+  switch(type)
+  {
+    case 3:
+      int temp[] = {1, 1, 0, 1};
+      polyLength = 4;
+      memcpy(crcPoly, temp, sizeof(temp));
+      break;
+    case 4:
+      int temp1[] = {1, 0, 1, 1, 0};
+      polyLength = 5;
+      memcpy(crcPoly, temp1, sizeof(temp1));
+      break;
+    case 8:
+      int temp2[] = {1, 0, 0, 1, 1, 0, 1, 0, 1};
+      polyLength = 9;
+      memcpy(crcPoly, temp2, sizeof(temp2));
+      break;
+  }
+
+  // removing all spaces from binary message for easier division
+  for(int i = 0; message[i] != '\0'; i++)
+  {
+    if(isdigit(message[i]))
+    {
+      noSpaceBin[counter++] = message[i];
+    }
+  }
+
+  // null terminator at end of removed space binary
+  noSpaceBin[counter] = '\0';
+  
+  
+  for(int i = 0; i <= strlen(message) - polyLength; i++)
+  {
+
+  }
+
+
 }
