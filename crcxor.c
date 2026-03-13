@@ -41,7 +41,7 @@ Due Date: 3/23/26
 void processPlaintext(char *plaintext, char *newText);
 void getDecHex(char *preMessage, char *newDec, char *newHex, char arr[16][8]);
 void getBin(char *preprocessMessage, char *binaryMessage);
-void getCrc(char *message, int type, char *crcVal, char *crcHex);
+void getCrc(char *message, int type, char *crcVal);
 
 int main(int argc, char *argv[])
 {
@@ -162,9 +162,14 @@ int main(int argc, char *argv[])
 
   // obtaining and printing crc value in binary and hex
   char crcBin[8];
-  char crcHex[8];
-  getCrc(binaryMessage, crcType, crcBin, crcHex);
+  long crcHex = 0;
+  getCrc(binaryMessage, crcType, crcBin);
 
+  printf("The crc value for the chosen crc algorithm in binary:\n%s\n\n", crcBin);
+
+  crcHex = strtol(crcBin, NULL, 2);
+
+  printf("The crc value for the chosen crc algorithm in hex:\n%lX\n\n", crcHex);
 
 
 
@@ -292,7 +297,7 @@ void getBin(char *preprocessMessage, char *binaryMessage)
   }
 }
 
-void getCrc(char *message, int type, char *crcVal, char *crcHex)
+void getCrc(char *message, int type, char *crcVal)
 {
 
   // initializing variables to set up for polynomial division
@@ -300,6 +305,8 @@ void getCrc(char *message, int type, char *crcVal, char *crcHex)
   char noSpaceBin[10000];
   int counter = 0;
   int polyLength = 0;
+  int temp = 0;
+  int xor = 0;
 
   // creating crc polynomial for division with XOR
   switch(type)
@@ -333,11 +340,26 @@ void getCrc(char *message, int type, char *crcVal, char *crcHex)
   // null terminator at end of removed space binary
   noSpaceBin[counter] = '\0';
   
-  
-  for(int i = 0; i <= strlen(message) - polyLength; i++)
+  // completing XOR polynomial division
+  for(int i = 0; i <= strlen(noSpaceBin) - polyLength; i++)
   {
-
+    if(noSpaceBin[i] == '1')
+    {
+      for(int j = 0; j < polyLength; j++)
+      {
+        temp = noSpaceBin[i + j] - '0';
+        xor = temp ^ crcPoly[j];
+        noSpaceBin[i + j] = xor + '0';
+      }
+    }
   }
 
 
+  int start = strlen(noSpaceBin) - type;
+  for(int i = 0; i < type; i++)
+  {
+    crcVal[i] = noSpaceBin[start + i];
+  }
+
+  crcVal[type] = '\0';
 }
