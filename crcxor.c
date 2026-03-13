@@ -42,7 +42,9 @@ void processPlaintext(char *plaintext, char *newText);
 void getDecHex(char *preMessage, char *newDec, char *newHex, char arr[16][8]);
 void getBin(char *preprocessMessage, char *binaryMessage);
 void getCrc(char *message, int type, char *crcVal);
+void checkSum(char *message, char *sumBin);
 
+// main
 int main(int argc, char *argv[])
 {
 
@@ -139,40 +141,133 @@ int main(int argc, char *argv[])
 
   // obtaining and printing binary representation of message
   char binaryMessage[10000];
+  char paddedBinary[10000];
+  paddedBinary[0] = '\0';
   getBin(preprocessMessage, binaryMessage);
   printf("The binary representation of the preprocessed message:\n%s\n\n", binaryMessage);
 
   // padding binary representation of message
+  strcat(paddedBinary, binaryMessage);
   switch(crcType)
   {
     case 3:
-      strcat(binaryMessage, "000");
+      strcat(paddedBinary, " 000");
       break;
     case 4:
-      strcat(binaryMessage, "0000");
+      strcat(paddedBinary, " 0000");
       break;
     case 8:
-      strcat(binaryMessage, "00000000");
+      strcat(paddedBinary, " 00000000");
       break; 
   }
 
   // printing binary representation
   printf("The binary representation of the original message prepared for CRC computation\n");
-  printf("(padded with %d zeros):\n%s\n\n", crcType, binaryMessage);
+  printf("(padded with %d zeros):\n%s\n\n", crcType, paddedBinary);
 
-  // obtaining and printing crc value in binary and hex
-  char crcBin[8];
+  // initializing to store crc value in binary and hex
+  char crcBin[9];
   long crcHex = 0;
-  getCrc(binaryMessage, crcType, crcBin);
 
+  // calculating crc value and printing in binary
+  getCrc(paddedBinary, crcType, crcBin);
   printf("The crc value for the chosen crc algorithm in binary:\n%s\n\n", crcBin);
 
+  // transforming binary value into hex and printing
   crcHex = strtol(crcBin, NULL, 2);
+  if(crcType == 8)
+  {
+    printf("The crc value for the chosen crc algorithm in hex:\n%02lX\n\n", crcHex);
+  }
+  else
+  {
+    printf("The crc value for the chosen crc algorithm in hex:\n%lX\n\n", crcHex);
+  }
 
-  printf("The crc value for the chosen crc algorithm in hex:\n%lX\n\n", crcHex);
+  // appending crc hex value to hex rep of message
+  char addHex[10];
+  char sumInput[10000];
+  char finalHex[10000];
+  sumInput[0] = '\0';
+
+  // in case of leading 0's in crc 8
+  if(crcType == 8)
+  {
+    sprintf(addHex, "%02lX", crcHex);
+  }
+  else
+  {
+    sprintf(addHex, "%lX", crcHex);
+  }
+  strcat(sumInput, hexMessage);
+  strcat(sumInput, addHex);
+
+  // removing spaces in hex rep
+  int counter = 0;
+
+  // parsing through representation, removing spaces
+  for (int i = 0; sumInput[i] != '\0'; i++)
+  {
+    if (isalnum(sumInput[i]))
+    {
+      finalHex[counter++] = (sumInput[i]);
+    }
+  }
+  finalHex[counter] = '\0';
 
 
+  // appending crc bin value to binary rep of message
+  if(crcType == 3)
+  {
+    strcat(binaryMessage, "0");
+  }
+  strcat(binaryMessage, crcBin);
 
+
+  // preparing final binary value for checksum
+  counter = 0;
+  char finalBin[10000];
+  finalBin[0] = '\0';
+
+  // adding space after every 4 bits for binary rep
+  for(int i = 0; binaryMessage[i] != '\0'; i++)
+  {
+    if((i % 4) == 0 && i != 0)
+    {
+      finalBin[counter++] = ' ';
+    }
+    finalBin[counter++] = binaryMessage[i];
+  }
+  strcat(finalBin, " ");
+
+  // printing bin and hex rep with crc value appended
+  printf("The input in hex for this XOR checksum computation:\n%s\n\n", finalHex);
+  printf("The input in binary for this XOR checksum computation:\n%s\n\n", finalBin);
+
+  // obtaining checksum binary value
+  char binSum[5];
+  binSum[0] = '\0';
+  checkSum(binaryMessage, binSum);
+
+  // printing binary checksum value
+  printf("The xor checksum value for the chosen crc algorithm in binary:\n%s\n\n", binSum);
+
+
+  // transforming binary value into hex and printing
+  long sumHex = 0;
+  sumHex = strtol(binSum, NULL, 2);
+  printf("The xor checksum value for the chosen crc algorithm in hex:\n%lX\n\n", sumHex);
+
+  // appending checksum hex value to hex rep of message
+  char addSumHex[10];
+  char finalOutput[10000];
+  finalOutput[0] = '\0';
+  sprintf(addSumHex, "%lX", sumHex);
+  strcat(finalOutput, finalHex);
+  strcat(finalOutput, addSumHex);
+
+  // printing final result
+  printf("The final message is going to be transmitted in hex:\n%s\n\n", finalOutput);
 
   return 0;
 }
@@ -292,11 +387,10 @@ void getBin(char *preprocessMessage, char *binaryMessage)
       sprintf(temp, "%d", tempBin[j]);
       strcat(binaryMessage, temp);
     }
-
-    strcat(binaryMessage, " ");
   }
 }
 
+// function to get crc value
 void getCrc(char *message, int type, char *crcVal)
 {
 
@@ -305,12 +399,13 @@ void getCrc(char *message, int type, char *crcVal)
   char noSpaceBin[10000];
   int counter = 0;
   int polyLength = 0;
-  int temp = 0;
+  int tempChar = 0;
   int xor = 0;
 
   // creating crc polynomial for division with XOR
   switch(type)
   {
+    // creating polynomial for each crc type and setting length
     case 3:
       int temp[] = {1, 1, 0, 1};
       polyLength = 4;
@@ -341,25 +436,79 @@ void getCrc(char *message, int type, char *crcVal)
   noSpaceBin[counter] = '\0';
   
   // completing XOR polynomial division
-  for(int i = 0; i <= strlen(noSpaceBin) - polyLength; i++)
+  int binLength = strlen(noSpaceBin);
+  for(int i = 0; i <= binLength - polyLength; i++)
   {
     if(noSpaceBin[i] == '1')
     {
+      // turning char '0' into int 0
       for(int j = 0; j < polyLength; j++)
       {
-        temp = noSpaceBin[i + j] - '0';
-        xor = temp ^ crcPoly[j];
+        tempChar = noSpaceBin[i + j] - '0';
+        xor = tempChar ^ crcPoly[j];
         noSpaceBin[i + j] = xor + '0';
       }
     }
   }
 
-
+  // starting from last "type" amount of characters
   int start = strlen(noSpaceBin) - type;
   for(int i = 0; i < type; i++)
   {
+    // inserting remainder into crcVal
     crcVal[i] = noSpaceBin[start + i];
   }
 
+  // padding with leading 0's if necessary
+  int newBinLength = strlen(crcVal);
+  while(newBinLength < type)
+  {
+    // moving bulk up
+    for(int i = newBinLength; i >=0; i--)
+    {
+      crcVal[i + 1] = crcVal[i];
+    }
+    // inserting a padding 0
+    crcVal[0] = '0';
+    newBinLength++;
+  }
+
+  // null terminator
   crcVal[type] = '\0';
+}
+
+// function to get xor checksum value
+void checkSum(char *message, char *sumBin)
+{
+  // initializing variables to compute XOR checksum
+  int tempChar = 0;
+  int tempCharTwo = 0;
+  int xor = 0;
+
+  // going by groups of 4 bits
+  for(int i = 0; message[i] != '\0'; i += 4)
+  {
+    // setting up for first XOR computation
+    if(i == 0)
+    {
+      for(int j = 0; j < 4; j++)
+      {
+        sumBin[j] = message[j];
+      }
+    }
+    else
+    {
+      // looping through group of 4 to xor bits
+      for(int j = 0; j < 4; j++)
+      {
+        tempChar = message[i + j] - '0';
+        tempCharTwo = sumBin[j] - '0';
+        xor = tempChar ^ tempCharTwo;
+        sumBin[j] = xor + '0';
+      }
+    }
+  }
+
+  // null terminator
+  sumBin[4] = '\0';
 }
